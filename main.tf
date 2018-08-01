@@ -1,11 +1,11 @@
 #Allow our state to be persisted in blob storage
-terraform {
-  backend "azurerm" {
-    storage_account_name = "wfinfraprd010101"
-    container_name       = "wfinfraprdstate010101"
-    key                  = "terraform.polbill.state"
-  }
-}
+# terraform {
+#   backend "azurerm" {
+#     storage_account_name = "wfinfraprd010101"
+#     container_name       = "wfinfraprdstate010101"
+#     key                  = "terraform.polbill.state"
+#   }
+# }
 
 #Create a resource group to put our resources into
 resource "azurerm_resource_group" "wfbill_resource_group" {
@@ -18,6 +18,8 @@ resource "azurerm_resource_group" "wfbill_resource_group" {
     organisation = "${var.organisation}"
   }
 }
+
+#Create a local storage account for our application
 
 resource "azurerm_storage_account" "wfbill_storage_account" {
   name                     = "${var.organisation}${var.department}${var.environment}${var.project}"
@@ -33,14 +35,16 @@ resource "azurerm_storage_account" "wfbill_storage_account" {
   }
 }
 
+#Get a reference to the keyvault as we want to push the storage connection string to it
 data "azurerm_key_vault" "wfcore_key_vault" {
   name                = "wfinfraprd-core"
   resource_group_name = "wf-infra-prd-core"
 }
 
+#Save the storage connection string to the key vault
 resource "azurerm_key_vault_secret" "wfbill_store_accesskey" {
   name      = "${var.organisation}${var.department}${var.environment}${var.project}-accesskey"
-  value     = "${azurerm_storage_account.wfbill_storage_account.primary_access_key}"
+  value     = "${azurerm_storage_account.wfbill_storage_account.primary_connection_string}"
   vault_uri = "${data.azurerm_key_vault.wfcore_key_vault.vault_uri}"
 
   tags {
@@ -50,6 +54,7 @@ resource "azurerm_key_vault_secret" "wfbill_store_accesskey" {
   }
 }
 
+#Ceate an app service plan
 resource "azurerm_app_service_plan" "wfbill_app_service_plan" {
   name                = "${var.organisation}${var.department}${var.environment}${var.project}"
   location            = "${azurerm_resource_group.wfbill_resource_group.location}"
@@ -61,28 +66,61 @@ resource "azurerm_app_service_plan" "wfbill_app_service_plan" {
   }
 }
 
+#Create a function app which is registered with Azure AD
 resource "azurerm_function_app" "wfbill_function_app" {
   name                      = "${var.organisation}${var.department}${var.environment}${var.project}"
   location                  = "${azurerm_resource_group.wfbill_resource_group.location}"
   resource_group_name       = "${azurerm_resource_group.wfbill_resource_group.name}"
   app_service_plan_id       = "${azurerm_app_service_plan.wfbill_app_service_plan.id}"
   storage_connection_string = "${azurerm_storage_account.wfbill_storage_account.primary_connection_string}"
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  app_settings {
+    "KeyVaultLocation" = "${data.azurerm_key_vault.wfcore_key_vault.vault_uri}"
+  }
 }
 
-data "azurerm_client_config" "current" {}
+#Get a handle to the current client, so that we can get the tenant_id
+data "azurerm_client_config" "wfbill_client_config" {}
+
+#Get a handle to the service princile so that we
+data "azurerm_azuread_service_principal" "function_app_service_principle" {
+  display_name = "${var.organisation}${var.department}${var.environment}${var.project}"
+}
+
+# output "azure_active_directory_object_id" {
+#   value = "${data.azurerm_azuread_service_principal.test.id}"
+# }
 
 resource "azurerm_key_vault_access_policy" "wfbill_app_policy" {
   vault_name          = "${data.azurerm_key_vault.wfcore_key_vault.name}"
   resource_group_name = "${data.azurerm_key_vault.wfcore_key_vault.resource_group_name}"
 
-  tenant_id = "${data.azurerm_client_config.current.tenant_id}"
-  object_id = "${azurerm_function_app.wfbill_function_app.id}"
+  tenant_id = "${data.azurerm_client_config.wfbill_client_config.tenant_id}"
+  object_id = "${data.azurerm_azuread_service_principal.function_app_service_principle.id}"
 
-  key_permissions = [
-    "get",
-  ]
+  key_permissions = []
 
   secret_permissions = [
+    "backup",
+    "delete",
     "get",
+    "list",
+    "purge",
+    "recover",
+    "set",
+    "restore",
   ]
+}
+
+data "azurerm_key_vault_secret" "test" {
+  name      = "${var.organisation}${var.department}${var.environment}${var.project}-accesskey"
+  vault_uri = "${data.azurerm_key_vault.wfcore_key_vault.vault_uri}"
+}
+
+output "secret_value" {
+  value = "${data.azurerm_key_vault_secret.test.value}"
 }
