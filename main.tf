@@ -1,11 +1,11 @@
 #Allow our state to be persisted in blob storage
-# terraform {
-#   backend "azurerm" {
-#     storage_account_name = "wfinfraprd010101"
-#     container_name       = "wfinfraprdstate010101"
-#     key                  = "terraform.polbill.state"
-#   }
-# }
+terraform {
+  backend "azurerm" {
+    storage_account_name = "wfinfraprd010101"
+    container_name       = "wfinfraprdstate010101"
+    key                  = "terraform.polbill.state"
+  }
+}
 
 #Create a resource group to put our resources into
 resource "azurerm_resource_group" "wfbill_resource_group" {
