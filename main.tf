@@ -38,7 +38,7 @@ data "azurerm_key_vault" "wfcore_key_vault" {
   resource_group_name = "wf-infra-prd-core"
 }
 
-resource "azurerm_key_vault_secret" "wfcore_key_vault" {
+resource "azurerm_key_vault_secret" "wfbill_store_accesskey" {
   name      = "${var.organisation}${var.department}${var.environment}${var.project}-accesskey"
   value     = "${azurerm_storage_account.wfbill_storage_account.primary_access_key}"
   vault_uri = "${data.azurerm_key_vault.wfcore_key_vault.vault_uri}"
@@ -48,4 +48,23 @@ resource "azurerm_key_vault_secret" "wfcore_key_vault" {
     department   = "${var.department}"
     organisation = "${var.organisation}"
   }
+}
+
+resource "azurerm_app_service_plan" "wfbill_app_service_plan" {
+  name                = "azure-functions-test-service-plan"
+  location            = "${azurerm_resource_group.wfbill_resource_group.location}"
+  resource_group_name = "${azurerm_resource_group.wfbill_resource_group.name}"
+
+  sku {
+    tier = "Standard"
+    size = "S1"
+  }
+}
+
+resource "azurerm_function_app" "wfbill_function_app" {
+  name                      = "test-azure-functions"
+  location                  = "${azurerm_resource_group.wfbill_resource_group.location}"
+  resource_group_name       = "${azurerm_resource_group.wfbill_resource_group.name}"
+  app_service_plan_id       = "${azurerm_app_service_plan.wfbill_app_service_plan.id}"
+  storage_connection_string = "${azurerm_storage_account.wfbill_storage_account.primary_connection_string}"
 }
