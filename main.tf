@@ -51,7 +51,7 @@ resource "azurerm_key_vault_secret" "wfbill_store_accesskey" {
 }
 
 resource "azurerm_app_service_plan" "wfbill_app_service_plan" {
-  name                = "azure-functions-test-service-plan"
+  name                = "${var.organisation}${var.department}${var.environment}${var.project}"
   location            = "${azurerm_resource_group.wfbill_resource_group.location}"
   resource_group_name = "${azurerm_resource_group.wfbill_resource_group.name}"
 
@@ -62,7 +62,7 @@ resource "azurerm_app_service_plan" "wfbill_app_service_plan" {
 }
 
 resource "azurerm_function_app" "wfbill_function_app" {
-  name                      = "test-azure-functions"
+  name                      = "${var.organisation}${var.department}${var.environment}${var.project}"
   location                  = "${azurerm_resource_group.wfbill_resource_group.location}"
   resource_group_name       = "${azurerm_resource_group.wfbill_resource_group.name}"
   app_service_plan_id       = "${azurerm_app_service_plan.wfbill_app_service_plan.id}"
