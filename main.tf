@@ -39,7 +39,7 @@ data "azurerm_key_vault" "wfcore_key_vault" {
 }
 
 resource "azurerm_key_vault_secret" "wfcore_key_vault" {
-  name      = "${var.organisation}${var.department}${var.environment}${var.project}"
+  name      = "${var.organisation}${var.department}${var.environment}${var.project}-accesskey"
   value     = "${azurerm_storage_account.wfbill_storage_account.primary_access_key}"
   vault_uri = "${data.azurerm_key_vault.wfcore_key_vault.vault_uri}"
 
