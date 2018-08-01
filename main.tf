@@ -68,3 +68,21 @@ resource "azurerm_function_app" "wfbill_function_app" {
   app_service_plan_id       = "${azurerm_app_service_plan.wfbill_app_service_plan.id}"
   storage_connection_string = "${azurerm_storage_account.wfbill_storage_account.primary_connection_string}"
 }
+
+data "azurerm_client_config" "current" {}
+
+resource "azurerm_key_vault_access_policy" "wfbill_app_policy" {
+  vault_name          = "${data.azurerm_key_vault.wfcore_key_vault.name}"
+  resource_group_name = "${data.azurerm_key_vault.wfcore_key_vault.resource_group_name}"
+
+  tenant_id = "${data.azurerm_client_config.current.tenant_id}"
+  object_id = "${azurerm_function_app.wfbill_function_app.id}"
+
+  key_permissions = [
+    "get",
+  ]
+
+  secret_permissions = [
+    "get",
+  ]
+}
