@@ -1,8 +1,8 @@
 #Persist our state to blob storage
 terraform {
   backend "azurerm" {
-    storage_account_name = "wfinfraprd010104"
-    container_name       = "wfinfraprdstate010102"
+    storage_account_name = "wfecom2020state"
+    container_name       = "wfecom2020state"
     key                  = "terraform.polbill.state"
   }
 }
