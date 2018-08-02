@@ -2,7 +2,7 @@
 terraform {
   backend "azurerm" {
     storage_account_name = "wfinfraprd010104"
-    container_name       = "wfinfraprdstate010101"
+    container_name       = "wfinfraprdstate010102"
     key                  = "terraform.polbill.state"
   }
 }
