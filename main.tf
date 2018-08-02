@@ -89,12 +89,11 @@ data "azurerm_client_config" "wfbill_client_config" {}
 #Get a handle to the service princile so that we
 data "azurerm_azuread_service_principal" "function_app_service_principle" {
   display_name = "${var.organisation}${var.department}${var.environment}${var.project}"
+
+  depends_on = ["azurerm_function_app.wfbill_function_app"]
 }
 
-# output "azure_active_directory_object_id" {
-#   value = "${data.azurerm_azuread_service_principal.test.id}"
-# }
-
+#Give the new function app access to key vault
 resource "azurerm_key_vault_access_policy" "wfbill_app_policy" {
   vault_name          = "${data.azurerm_key_vault.wfcore_key_vault.name}"
   resource_group_name = "${data.azurerm_key_vault.wfcore_key_vault.resource_group_name}"
@@ -114,13 +113,4 @@ resource "azurerm_key_vault_access_policy" "wfbill_app_policy" {
     "set",
     "restore",
   ]
-}
-
-data "azurerm_key_vault_secret" "test" {
-  name      = "${var.organisation}${var.department}${var.environment}${var.project}-accesskey"
-  vault_uri = "${data.azurerm_key_vault.wfcore_key_vault.vault_uri}"
-}
-
-output "secret_value" {
-  value = "${data.azurerm_key_vault_secret.test.value}"
 }
