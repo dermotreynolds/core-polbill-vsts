@@ -1,11 +1,11 @@
-# #Allow our state to be persisted in blob storage
-# terraform {
-#   backend "azurerm" {
-#     storage_account_name = "wfinfraprd010101"
-#     container_name       = "wfinfraprdstate010101"
-#     key                  = "terraform.polbill.state"
-#   }
-# }
+#Allow our state to be persisted in blob storage
+terraform {
+  backend "azurerm" {
+    storage_account_name = "wfinfraprd010101"
+    container_name       = "wfinfraprdstate010101"
+    key                  = "terraform.polbill.state"
+  }
+}
 
 provider "azurerm" {
   version = "~> 1.11.0"
