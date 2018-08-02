@@ -90,17 +90,6 @@ resource "azurerm_function_app" "wfbill_function_app" {
 #Get a handle to the current client, so that we can get the tenant_id
 data "azurerm_client_config" "wfbill_client_config" {}
 
-#Get a handle to the service princile so that we
-# data "azurerm_azuread_service_principal" "function_app_service_principle" {
-#   display_name = "${var.organisation}${var.department}${var.environment}${var.project}"
-
-#   depends_on = ["azurerm_function_app.wfbill_function_app"]
-# }
-
-# output "storagekey" {
-#   value = "${data.azurerm_azuread_service_principal.function_app_service_principle.id}"
-# }
-
 #Give the new function app access to key vault
 resource "azurerm_key_vault_access_policy" "wfbill_app_policy" {
   vault_name          = "${data.azurerm_key_vault.wfcore_key_vault.name}"
@@ -124,36 +113,3 @@ resource "azurerm_key_vault_access_policy" "wfbill_app_policy" {
 
   depends_on = ["azurerm_function_app.wfbill_function_app"]
 }
-
-# data "azurerm_app_service" "test" {
-#   name                = "${var.organisation}${var.department}${var.environment}${var.project}"
-#   resource_group_name = "${azurerm_resource_group.wfbill_resource_group.name}"
-# }
-
-
-# output "app_service_id" {
-#   value = "${data.azurerm_app_service.test.id}"
-# }
-
-
-# #Get a handle to the service princile so that we
-# data "azurerm_azuread_service_principal" "test" {
-#   object_id = "${azurerm_function_app.wfbill_function_app.identity.0.principal_id}"
-# }
-
-
-# output "storagekey" {
-#   //value = "${azurerm_function_app.wfbill_function_app.identity[principle_id]}"  //value = "${azurerm_function_app.wfbill_function_app.identity["baz"]}"
-
-
-#   //value = "$${lookup(azurerm_function_app.wfbill_function_app.identity, principal_id , "No way this should happen")}"  //value = "$${zipmap(azurerm_function_app.wfbill_function_app.identity, principal_id)}"
-
-
-#   value = "${azurerm_function_app.wfbill_function_app.identity.0.principal_id}"
-# }
-
-
-# # data "azurerm_azuread_service_principal" "test1" {
-# #   display_name = "SinglePaneDev"
-# # }
-
