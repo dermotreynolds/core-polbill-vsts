@@ -142,8 +142,8 @@ data "azurerm_client_config" "wfbill_client_config" {}
 
 #Give the new function app access to key vault
 resource "azurerm_key_vault_access_policy" "wfbill_app_policy" {
-  vault_name          = "${data.azurerm_key_vault.wfcore_key_vault.name}"
-  resource_group_name = "${data.azurerm_key_vault.wfcore_key_vault.resource_group_name}"
+  vault_name          = "${azurerm_key_vault.wfcore_key_vault.name}"
+  resource_group_name = "${azurerm_key_vault.wfcore_key_vault.resource_group_name}"
 
   tenant_id = "${data.azurerm_client_config.wfbill_client_config.tenant_id}"
   object_id = "${azurerm_function_app.wfbill_function_app.identity.0.principal_id}"
