@@ -89,27 +89,24 @@ resource "azurerm_storage_account" "wfbill_storage_account" {
   }
 }
 
-# #Get a reference to the keyvault as we want to push the storage connection string to it
+#Get a reference to the keyvault as we want to push the storage connection string to it
 # data "azurerm_key_vault" "wfcore_key_vault" {
 #   name                = "wfinfraprd-core"
 #   resource_group_name = "wf-infra-prd-core"
 # }
 
+#Save the storage connection string to the key vault
+resource "azurerm_key_vault_secret" "wfbill_store_accesskey" {
+  name      = "${var.organisation}${var.department}${var.environment}${var.project}-accesskey"
+  value     = "${azurerm_storage_account.wfbill_storage_account.primary_connection_string}"
+  vault_uri = "${azurerm_key_vault.wfcore_key_vault.vault_uri}"
 
-# #Save the storage connection string to the key vault
-# resource "azurerm_key_vault_secret" "wfbill_store_accesskey" {
-#   name      = "${var.organisation}${var.department}${var.environment}${var.project}-accesskey"
-#   value     = "${azurerm_storage_account.wfbill_storage_account.primary_connection_string}"
-#   vault_uri = "${data.azurerm_key_vault.wfcore_key_vault.vault_uri}"
-
-
-#   tags {
-#     environment  = "${var.environment}"
-#     department   = "${var.department}"
-#     organisation = "${var.organisation}"
-#   }
-# }
-
+  tags {
+    environment  = "${var.environment}"
+    department   = "${var.department}"
+    organisation = "${var.organisation}"
+  }
+}
 
 # #Ceate an app service plan
 # resource "azurerm_app_service_plan" "wfbill_app_service_plan" {
