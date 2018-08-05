@@ -75,22 +75,19 @@ resource "azurerm_key_vault" "wfcore_key_vault" {
 
 # #Create a local storage account for our application
 
+resource "azurerm_storage_account" "wfbill_storage_account" {
+  name                     = "${var.organisation}${var.department}${var.environment}${var.project}"
+  resource_group_name      = "${azurerm_resource_group.wfbill_resource_group.name}"
+  location                 = "${azurerm_resource_group.wfbill_resource_group.location}"
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
 
-# resource "azurerm_storage_account" "wfbill_storage_account" {
-#   name                     = "${var.organisation}${var.department}${var.environment}${var.project}"
-#   resource_group_name      = "${azurerm_resource_group.wfbill_resource_group.name}"
-#   location                 = "${azurerm_resource_group.wfbill_resource_group.location}"
-#   account_tier             = "Standard"
-#   account_replication_type = "GRS"
-
-
-#   tags {
-#     environment  = "${var.environment}"
-#     department   = "${var.department}"
-#     organisation = "${var.organisation}"
-#   }
-# }
-
+  tags {
+    environment  = "${var.environment}"
+    department   = "${var.department}"
+    organisation = "${var.organisation}"
+  }
+}
 
 # #Get a reference to the keyvault as we want to push the storage connection string to it
 # data "azurerm_key_vault" "wfcore_key_vault" {
