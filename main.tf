@@ -109,38 +109,33 @@ resource "azurerm_key_vault_secret" "wfbill_store_accesskey" {
 }
 
 # #Ceate an app service plan
-# resource "azurerm_app_service_plan" "wfbill_app_service_plan" {
-#   name                = "${var.organisation}${var.department}${var.environment}${var.project}"
-#   location            = "${azurerm_resource_group.wfbill_resource_group.location}"
-#   resource_group_name = "${azurerm_resource_group.wfbill_resource_group.name}"
+resource "azurerm_app_service_plan" "wfbill_app_service_plan" {
+  name                = "${var.organisation}${var.department}${var.environment}${var.project}"
+  location            = "${azurerm_resource_group.wfbill_resource_group.location}"
+  resource_group_name = "${azurerm_resource_group.wfbill_resource_group.name}"
 
-
-#   sku {
-#     tier = "Standard"
-#     size = "S1"
-#   }
-# }
-
+  sku {
+    tier = "Standard"
+    size = "S1"
+  }
+}
 
 # #Create a function app which is registered with Azure AD
-# resource "azurerm_function_app" "wfbill_function_app" {
-#   name                      = "${var.organisation}${var.department}${var.environment}${var.project}"
-#   location                  = "${azurerm_resource_group.wfbill_resource_group.location}"
-#   resource_group_name       = "${azurerm_resource_group.wfbill_resource_group.name}"
-#   app_service_plan_id       = "${azurerm_app_service_plan.wfbill_app_service_plan.id}"
-#   storage_connection_string = "${azurerm_storage_account.wfbill_storage_account.primary_connection_string}"
+resource "azurerm_function_app" "wfbill_function_app" {
+  name                      = "${var.organisation}${var.department}${var.environment}${var.project}"
+  location                  = "${azurerm_resource_group.wfbill_resource_group.location}"
+  resource_group_name       = "${azurerm_resource_group.wfbill_resource_group.name}"
+  app_service_plan_id       = "${azurerm_app_service_plan.wfbill_app_service_plan.id}"
+  storage_connection_string = "${azurerm_storage_account.wfbill_storage_account.primary_connection_string}"
 
+  identity {
+    type = "SystemAssigned"
+  }
 
-#   identity {
-#     type = "SystemAssigned"
-#   }
-
-
-#   app_settings {
-#     "KeyVaultLocation" = "${data.azurerm_key_vault.wfcore_key_vault.vault_uri}"
-#   }
-# }
-
+  app_settings {
+    "KeyVaultLocation" = "${azurerm_key_vault.wfcore_key_vault.vault_uri}"
+  }
+}
 
 # #Get a handle to the current client, so that we can get the tenant_id
 # data "azurerm_client_config" "wfbill_client_config" {}
