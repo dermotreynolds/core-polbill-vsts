@@ -138,34 +138,28 @@ resource "azurerm_function_app" "wfbill_function_app" {
 }
 
 # #Get a handle to the current client, so that we can get the tenant_id
-# data "azurerm_client_config" "wfbill_client_config" {}
+data "azurerm_client_config" "wfbill_client_config" {}
 
+#Give the new function app access to key vault
+resource "azurerm_key_vault_access_policy" "wfbill_app_policy" {
+  vault_name          = "${data.azurerm_key_vault.wfcore_key_vault.name}"
+  resource_group_name = "${data.azurerm_key_vault.wfcore_key_vault.resource_group_name}"
 
-# #Give the new function app access to key vault
-# resource "azurerm_key_vault_access_policy" "wfbill_app_policy" {
-#   vault_name          = "${data.azurerm_key_vault.wfcore_key_vault.name}"
-#   resource_group_name = "${data.azurerm_key_vault.wfcore_key_vault.resource_group_name}"
+  tenant_id = "${data.azurerm_client_config.wfbill_client_config.tenant_id}"
+  object_id = "${azurerm_function_app.wfbill_function_app.identity.0.principal_id}"
 
+  key_permissions = []
 
-#   tenant_id = "${data.azurerm_client_config.wfbill_client_config.tenant_id}"
-#   object_id = "${azurerm_function_app.wfbill_function_app.identity.0.principal_id}"
+  secret_permissions = [
+    "backup",
+    "delete",
+    "get",
+    "list",
+    "purge",
+    "recover",
+    "set",
+    "restore",
+  ]
 
-
-#   key_permissions = []
-
-
-#   secret_permissions = [
-#     "backup",
-#     "delete",
-#     "get",
-#     "list",
-#     "purge",
-#     "recover",
-#     "set",
-#     "restore",
-#   ]
-
-
-#   depends_on = ["azurerm_function_app.wfbill_function_app"]
-# }
-
+  depends_on = ["azurerm_function_app.wfbill_function_app"]
+}
